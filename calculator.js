@@ -33,12 +33,13 @@ function storeEverything(value) {
   }
   let lastIndex = onScreen[onScreen.length - 1];
   let secondLastIndex = onScreen[onScreen.length - 2];
+  let firstIndex = onScreen[0];
 
   switch (lastIndex) {
     case "+":
-    case "÷": // signs replace eachother 
+    case "-": // signs replace eachother
+    case "÷":
     case "×":
-    case "-":
       switch (secondLastIndex) {
         case "+":
         case "-":
@@ -48,6 +49,13 @@ function storeEverything(value) {
           break;
       }
       break;
+  }
+  switch (firstIndex) {
+    case "+":
+    case "×":
+    case "÷":
+      onScreen = "0";
+      answerOfEquation = "0";
   }
 }
 
@@ -144,6 +152,10 @@ function gatherNumbers(equation) {
         }
       }
     }
+  }
+  if (equation[0] === "-" && equation.length > 1) { // turn first number into negative  
+    equation[0] += equation[1];
+    equation.splice(1, 1);
   }
   return equation;
 }
