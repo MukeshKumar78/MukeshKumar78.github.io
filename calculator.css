@@ -3,7 +3,7 @@
 }
 
 body {
-  padding: 5% 35%;
+  padding: 7% 7%;
 }
 
 .calc {
@@ -41,7 +41,7 @@ body {
 .calc-button {
   color: black;
   background-color: #d8d9db;
-  width: 24.6%;
+  width: 24.62%;
   height: 70px;
   font-size: 250%;
   font-family: monospace;
@@ -70,8 +70,4 @@ body {
 
 .double {
   width: 49.7%;
-}
-
-.triple {
-  width: 74.9%;
 }

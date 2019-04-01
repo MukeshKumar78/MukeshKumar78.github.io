@@ -36,17 +36,20 @@ function storeEverything(value) {
   let firstIndex = onScreen[0];
 
   switch (lastIndex) {
-    case "+":
-    case "-": // signs replace eachother
-    case "÷":
-    case "×":
+    case "-": // negative only remain with division and multiplication
       switch (secondLastIndex) {
         case "+":
         case "-":
-        case "÷":
-        case "×":
-          onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex;
+          onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex; // positive and negative replace negative
           break;
+      }
+      break;
+    case "+": // signs replace eacahother except negative sign
+    case "÷":
+    case "×":
+      if (containAnySign(secondLastIndex)) {
+        onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex;
+        break;
       }
       break;
   }
@@ -63,7 +66,7 @@ function handleSymbol(value) {
   switch (value) {
     case "C":
       onScreen = "0";
-      answerOfEquation = "0";
+      answerOfEquation = " ";
       beforeValue = 0;
       afterValue = 0;
       operator = null;
@@ -71,8 +74,11 @@ function handleSymbol(value) {
       runningTotal = 0;
       break;
     case "=":
+      // if decimal round it up.
+      // onScreen = Number(answerOfEquation).toFixed(0) + "";
       onScreen = answerOfEquation;
       answerOfEquation = "";
+
       break;
     case "←":
       if (onScreen.length === 1) {
@@ -83,8 +89,7 @@ function handleSymbol(value) {
       solveForAnswer(onScreen); // recount answer
       break;
     default:
-      console.log("Symbol invalid!");
-      break;
+      return "Symbol Invalid!";
   }
 }
 
@@ -101,14 +106,10 @@ function solveForAnswer(equation) {
   }
 
   // remove last sign if any
-  if (
-    lastIndex === "×" ||
-    lastIndex === "÷" ||
-    lastIndex === "+" ||
-    lastIndex === "-"
-  ) {
+  if (containAnySign(lastIndex)) {
     equation = equation.slice(0, -1);
   }
+
   solveEquation(equation); // change string into number and solve it.
   answerOfEquation = "" + solutionOfEquation;
   return answerOfEquation;
@@ -118,44 +119,57 @@ function solveEquation(equation) {
   equation = equation.split(""); // split strings and change it into array
   gatherNumbers(equation);
   changeIntoNumbers(equation);
-  // BODMAS RULE
-  division(equation);
-  multiplication(equation);
-  subtraction(equation);
-  addition(equation);
-  solutionOfEquation = equation[0]; // store answer from array to a variable.
-  return solutionOfEquation;
+  if (equation.length > 2) {
+    // 3 things needed to do math.
+    // BODMAS RULE
+    division(equation);
+    multiplication(equation);
+    subtraction(equation);
+    addition(equation);
+    solutionOfEquation = equation[0]; // store answer from array to a variable.
+    return solutionOfEquation;
+  }
 }
 
 function gatherNumbers(equation) {
-  // because of split. Turn different strings(numbers) into one.
+  // because of split join strings that contain numbers.
+  console.log(equation);
   for (let i = 0; i < equation.length; i++) {
-    if (
-      equation[i] !== "*" &&
-      equation[i] !== "/" &&
-      equation[i] !== "+" &&
-      equation[i] !== "-"
-    ) {
+    console.log(equation);
+    if (containAnySign(equation[i]) === false) {
+      console.log(equation);
       for (let j = i + 1; j < equation.length; j++) {
-        if (
-          equation[j] === "*" ||
-          equation[j] === "/" ||
-          equation[j] === "+" ||
-          equation[j] === "-"
-        ) {
-          break;
+        console.log(equation);
+        if (containAnySign(equation[j])) {
+          console.log(equation);
+          break; // if find any sign then break
         } else {
+          console.log(equation);
           equation[i] += equation[j];
+          console.log(equation);
           equation.splice(j, 1);
+          console.log(equation);
           i = 0;
           j = 0;
+          console.log(equation);
         }
       }
     }
   }
-  if (equation[0] === "-" && equation.length > 1) { // turn first number into negative  
+  console.log(equation);
+  if (equation[0] === "-" && equation.length > 1) {
+    // turn first number into negative number
     equation[0] += equation[1];
+    console.log(equation);
     equation.splice(1, 1);
+    console.log(equation);
+  }
+  console.log(equation);
+  for (let i = 0; i < equation.length; i++) {
+    //
+    if (equation[i] === "-" && containAnySign(equation[i - 1])) {
+      equation[i] += equation[i + 1];
+    }
   }
   return equation;
 }
@@ -163,9 +177,8 @@ function gatherNumbers(equation) {
 function changeIntoNumbers(equation) {
   // change strings into numbers except symbols
   for (let i = 0; i < equation.length; i++) {
-    if (isNaN(parseInt(equation[i]))) {
-    } else {
-      equation[i] = parseInt(equation[i]);
+    if (containAnySign(equation[i]) === false) {
+      equation[i] = Number(equation[i]);
     }
   }
 }
@@ -260,3 +273,17 @@ String.prototype.replaceAt = function(index, replacement) {
     this.substr(index + replacement.length)
   );
 };
+
+function containAnySign(sign) {
+  switch (sign) {
+    case "+":
+    case "-":
+    case "÷":
+    case "×":
+    case "*":
+    case "/":
+      return true;
+    default:
+      return false;
+  }
+}
