@@ -133,38 +133,25 @@ function solveEquation(equation) {
 
 function gatherNumbers(equation) {
   // because of split join strings that contain numbers.
-  console.log(equation);
   for (let i = 0; i < equation.length; i++) {
-    console.log(equation);
     if (containAnySign(equation[i]) === false) {
-      console.log(equation);
       for (let j = i + 1; j < equation.length; j++) {
-        console.log(equation);
         if (containAnySign(equation[j])) {
-          console.log(equation);
           break; // if find any sign then break
         } else {
-          console.log(equation);
           equation[i] += equation[j];
-          console.log(equation);
           equation.splice(j, 1);
-          console.log(equation);
           i = 0;
           j = 0;
-          console.log(equation);
         }
       }
     }
   }
-  console.log(equation);
   if (equation[0] === "-" && equation.length > 1) {
     // turn first number into negative number
     equation[0] += equation[1];
-    console.log(equation);
     equation.splice(1, 1);
-    console.log(equation);
   }
-  console.log(equation);
   for (let i = 0; i < equation.length; i++) {
     //
     if (equation[i] === "-" && containAnySign(equation[i - 1])) {
