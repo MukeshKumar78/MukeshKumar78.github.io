@@ -5,6 +5,7 @@ let afterValue = 0;
 let operator = null;
 let solutionOfEquation = 0;
 let runningTotal = 0;
+let answer = 0;
 
 const CALC_SCREEN = document.querySelector(".calc-screen");
 const SCREEN = document.querySelector(".screen");
@@ -17,7 +18,6 @@ document
 function buttonClick(value) {
   if (value !== "C" && value !== "=" && value !== "←") {
     storeEverything(value);
-    display();
     solveForAnswer(onScreen);
   } else {
     handleSymbol(value);
@@ -33,32 +33,45 @@ function storeEverything(value) {
   }
   let lastIndex = onScreen[onScreen.length - 1];
   let secondLastIndex = onScreen[onScreen.length - 2];
-  let firstIndex = onScreen[0];
-
+  let thirdLastIndex = onScreen[onScreen.length - 3];
   switch (lastIndex) {
-    case "-": // negative only remain with division and multiplication
+    case "+": // signs replace eachother except negative sign
+    case "÷":
+    case "×":
+      // after two signs(including negative) if third sign is pressed then third sign replaces both.
+      if (
+        containAnySign(secondLastIndex) &&
+        containAnySign(thirdLastIndex) === false
+      ) {
+        onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex;
+        break;
+      } else if (
+        containAnySign(secondLastIndex) &&
+        containAnySign(thirdLastIndex)
+      ) {
+        onScreen = onScreen.substr(0, onScreen.length - 3) + lastIndex;
+      }
+      break;
+    case "-": // negative sign remain after division and multiplication
       switch (secondLastIndex) {
         case "+":
-        case "-":
-          onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex; // positive and negative replace negative
+        case "-": // positive and negative replace negative
+          onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex;
           break;
       }
       break;
-    case "+": // signs replace eacahother except negative sign
-    case "÷":
-    case "×":
-      if (containAnySign(secondLastIndex)) {
-        onScreen = onScreen.substr(0, onScreen.length - 2) + lastIndex;
-        break;
-      }
-      break;
   }
-  switch (firstIndex) {
+
+  let firstIndex = onScreen[0];
+  switch (
+    firstIndex // first character should be a number, positive or negative
+  ) {
     case "+":
     case "×":
     case "÷":
       onScreen = "0";
       answerOfEquation = "0";
+      break;
   }
 }
 
@@ -75,17 +88,18 @@ function handleSymbol(value) {
       break;
     case "=":
       // if decimal round it up.
-      // onScreen = Number(answerOfEquation).toFixed(0) + "";
       onScreen = answerOfEquation;
+      answer = answerOfEquation;
       answerOfEquation = "";
 
       break;
     case "←":
       if (onScreen.length === 1) {
-        onScreen = "0";
+        buttonClick("C");
       } else {
         onScreen = onScreen.substring(0, onScreen.length - 1);
       }
+      answerOfEquation = "0";
       solveForAnswer(onScreen); // recount answer
       break;
     default:
@@ -94,22 +108,15 @@ function handleSymbol(value) {
 }
 
 function solveForAnswer(equation) {
-  let lastIndex = equation[equation.length - 1];
-
+  // change signs
   for (let i = 0; i < equation.length; i++) {
-    // change signs
     if (equation[i] === "×") {
       equation = equation.replaceAt(i, "*");
     } else if (equation[i] === "÷") {
       equation = equation.replaceAt(i, "/");
     }
   }
-
-  // remove last sign if any
-  if (containAnySign(lastIndex)) {
-    equation = equation.slice(0, -1);
-  }
-
+  equation = removeLastSymbols(equation);
   solveEquation(equation); // change string into number and solve it.
   answerOfEquation = "" + solutionOfEquation;
   return answerOfEquation;
@@ -128,6 +135,8 @@ function solveEquation(equation) {
     addition(equation);
     solutionOfEquation = equation[0]; // store answer from array to a variable.
     return solutionOfEquation;
+  } else {
+    solutionOfEquation = "0";
   }
 }
 
@@ -153,12 +162,12 @@ function gatherNumbers(equation) {
     equation.splice(1, 1);
   }
   for (let i = 0; i < equation.length; i++) {
-    //
+    // negative sign after multiplication or division remain with number to make it a negative number
     if (equation[i] === "-" && containAnySign(equation[i - 1])) {
       equation[i] += equation[i + 1];
+      equation.splice(i + 1, 1);
     }
   }
-  return equation;
 }
 
 function changeIntoNumbers(equation) {
@@ -247,20 +256,6 @@ function doMath(a, sign, b) {
   return runningTotal;
 }
 
-function display() {
-  CALC_SCREEN.innerText = onScreen;
-  SCREEN.innerText = answerOfEquation;
-}
-
-// define replaceAt function
-String.prototype.replaceAt = function(index, replacement) {
-  return (
-    this.substr(0, index) +
-    replacement +
-    this.substr(index + replacement.length)
-  );
-};
-
 function containAnySign(sign) {
   switch (sign) {
     case "+":
@@ -274,3 +269,30 @@ function containAnySign(sign) {
       return false;
   }
 }
+
+function removeLastSymbols(equation) {
+  // remove last symbol if any
+  let lastIndex = equation[equation.length - 1];
+  for (let i = 0; i < equation.length; i++) {
+    if (containAnySign(lastIndex)) {
+      equation = equation.slice(0, -1);
+      lastIndex = equation[equation.length - 1];
+      i = 0;
+    }
+  }
+  return equation;
+}
+
+function display() {
+  CALC_SCREEN.innerText = onScreen;
+  SCREEN.innerText = answerOfEquation;
+}
+
+// define replaceAt function
+String.prototype.replaceAt = function(index, replacement) {
+  return (
+    this.substr(0, index) +
+    replacement +
+    this.substr(index + replacement.length)
+  );
+};
